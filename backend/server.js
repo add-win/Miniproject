@@ -117,11 +117,9 @@ app.post("/detect", async (req, res) => {
   }
 
   const fcmMessage = {
-    notification: {
+    data: {
       title: "⚠️ Wild Animal Detected",
       body: `${animal} detected at ${location}`,
-    },
-    data: {
       animal,
       location,
       imageUrl,

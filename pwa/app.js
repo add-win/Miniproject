@@ -119,8 +119,8 @@ async function setupFCM() {
   // Handle foreground messages
   onMessage(messaging, (payload) => {
     console.log("📩 Foreground FCM:", payload);
-    const title = payload.notification?.title || "Wildlife Alert";
-    const body = payload.notification?.body || "";
+    const title = payload.data?.title || payload.notification?.title || "Wildlife Alert";
+    const body = payload.data?.body || payload.notification?.body || "";
     const img = payload.data?.imageUrl || "";
     showBanner(`${title} — ${body}`, img);
     playAlertSound();

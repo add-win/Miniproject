@@ -21,18 +21,20 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log("[SW] Background FCM received:", payload);
 
-  const title = payload.notification?.title || "⚠️ Wildlife Alert";
-  const body  = payload.notification?.body  || "Animal detected!";
+  const title = payload.data?.title || payload.notification?.title || "⚠️ Wildlife Alert";
+  const body  = payload.data?.body || payload.notification?.body  || "Animal detected!";
   const icon  = payload.data?.imageUrl      || "./icons/icon-192.png";
 
-  self.registration.showNotification(title, {
+  return self.registration.showNotification(title, {
     body,
     icon,
-    image: payload.data?.imageUrl, // This enables large rich photo display in the notification tray
+    image: payload.data?.imageUrl,
     badge: "./icons/icon-192.png",
-    vibrate: [200, 100, 200],
-    tag: "wildguard-alert",       // replaces previous notification instead of stacking
+    vibrate: [500, 200, 500, 200, 500], // More aggressive vibration pattern
+    tag: "wildguard-alert",
     renotify: true,
+    requireInteraction: true, // Forces notification to stay until dismissed
+    silent: false, // Ensures the system default sound plays
     data: payload.data || {},
   });
 });
