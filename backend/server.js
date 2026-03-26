@@ -9,9 +9,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// ─────────────────────────────────────────
-// Firebase Admin Initialization
-// ─────────────────────────────────────────
 const keyPath = process.env.FIREBASE_KEY_PATH || path.join(__dirname, "firebase-key.json");
 
 if (!fs.existsSync(keyPath)) {
@@ -31,10 +28,9 @@ admin.initializeApp({
 const db = admin.firestore();
 const messaging = admin.messaging();
 
-let tokens = [];       // In-memory FCM token store
-let detections = [];   // In-memory detection log (also synced to Firestore)
+let tokens = [];
+let detections = [];
 
-// Load existing detections from file on startup (local persistence)
 const detectionsFile = path.join(__dirname, "detections.json");
 if (fs.existsSync(detectionsFile)) {
   try {
@@ -45,9 +41,6 @@ if (fs.existsSync(detectionsFile)) {
   }
 }
 
-// ─────────────────────────────────────────
-// Register Device FCM Token
-// ─────────────────────────────────────────
 app.post("/register", (req, res) => {
   const { token } = req.body;
 
@@ -65,11 +58,6 @@ app.post("/register", (req, res) => {
   res.json({ message: "Device registered" });
 });
 
-// ─────────────────────────────────────────
-// Animal Detection Endpoint
-//   Called by your Python/detection script
-//   Body: { animal, location, imageUrl?, threatLevel? }
-// ─────────────────────────────────────────
 app.post("/detect", async (req, res) => {
   const { animal, location, imageUrl = "" } = req.body;
 
@@ -89,12 +77,9 @@ app.post("/detect", async (req, res) => {
     message: `⚠ ALERT: ${animal} detected at ${location}`,
   };
 
-  // Store locally
   detections.unshift(detection);
   fs.writeFileSync(detectionsFile, JSON.stringify(detections, null, 2));
   console.log(`\n🐾 Detection: ${animal} at ${location}`);
-
-  // ── Sync to Firestore (Flutter app reads from here) ──
   try {
     await db.collection("alerts").add({
       animal,
@@ -106,10 +91,8 @@ app.post("/detect", async (req, res) => {
     console.log("✅ Saved to Firestore");
   } catch (err) {
     console.error("⚠️  Firestore write failed:", err.message);
-    // Continue even if Firestore fails — FCM will still fire
   }
 
-  // ── Send FCM Push Notifications ──
   const validTokens = tokens.filter((t) => t);
   if (validTokens.length === 0) {
     console.log("⚠️  No registered devices — skipping FCM.");
@@ -132,7 +115,6 @@ app.post("/detect", async (req, res) => {
     const response = await messaging.sendEachForMulticast(fcmMessage);
     console.log(`📲 FCM: ${response.successCount}/${validTokens.length} sent`);
 
-    // Remove invalid/expired tokens
     response.responses.forEach((r, idx) => {
       if (!r.success) {
         const code = r.error?.code;
@@ -157,25 +139,16 @@ app.post("/detect", async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────
-// Get Detection History
-// ─────────────────────────────────────────
 app.get("/detections", (req, res) => {
   res.json(detections);
 });
 
-// ─────────────────────────────────────────
-// Reset System
-// ─────────────────────────────────────────
 app.post("/reset", async (req, res) => {
-  // Empty memory
   tokens = [];
   detections = [];
-  
-  // Empty local file
+
   fs.writeFileSync(detectionsFile, JSON.stringify([], null, 2));
 
-  // Remove local images
   const detectionsDir = path.join(__dirname, "detections");
   if (fs.existsSync(detectionsDir)) {
     const files = fs.readdirSync(detectionsDir);
@@ -190,7 +163,6 @@ app.post("/reset", async (req, res) => {
     }
   }
 
-  // Clear Firestore
   try {
     const snapshot = await db.collection("alerts").get();
     const batch = db.batch();
@@ -207,9 +179,6 @@ app.post("/reset", async (req, res) => {
   res.json({ message: "System reset successfully" });
 });
 
-// ─────────────────────────────────────────
-// Health Check
-// ─────────────────────────────────────────
 app.get("/health", (req, res) => {
   res.json({
     status: "running",
@@ -219,29 +188,16 @@ app.get("/health", (req, res) => {
   });
 });
 
-// ─────────────────────────────────────────
-// Start Server
-// ─────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log("\n🚀 WildGuard Backend running");
-  console.log(`   Local:    http://localhost:${PORT}`);
-  console.log(`   Network:  http://192.168.1.4:${PORT}`);
-  console.log(`   Health:   http://localhost:${PORT}/health\n`);
 });
 
-
-// ─────────────────────────────────────────
-// Serve PWA static files
-// ─────────────────────────────────────────
 const pwaPath = path.join(__dirname, "..", "pwa");
 if (fs.existsSync(pwaPath)) {
   app.use(express.static(pwaPath));
   console.log("🌐 Serving PWA from /pwa at http://localhost:" + (process.env.PORT || 5000));
 }
 
-// ─────────────────────────────────────────
-// Serve Detection Images
-// ─────────────────────────────────────────
 app.use("/detections_images", express.static(path.join(__dirname, "detections")));
 console.log("📸 Serving images at /detections_images");

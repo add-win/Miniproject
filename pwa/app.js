@@ -1,10 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging.js";
 
-// ─────────────────────────────────────────────────────────────
-// CONFIG — Fill these in with your Firebase project values
-// Get them from: Firebase Console → Project Settings → General → Your apps
-// ─────────────────────────────────────────────────────────────
 const FIREBASE_CONFIG = {
   apiKey: CONFIG.apiKey,
   authDomain: "wildguard-92dff.firebaseapp.com",
@@ -13,19 +9,9 @@ const FIREBASE_CONFIG = {
   appId: "1:786743626796:web:1740d36e4b3aa767665589",
 };
 
-// Your VAPID key — Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
 const VAPID_KEY = CONFIG.vapidKey;
-
-// ⚠️ Automatically adapt to the dynamically served origin
 const SERVER_URL = window.location.origin;
-// ─────────────────────────────────────────────────────────────
-// Init Firebase
-// ─────────────────────────────────────────────────────────────
 const firebaseApp = initializeApp(FIREBASE_CONFIG);
-
-// ─────────────────────────────────────────────────────────────
-// DOM refs
-// ─────────────────────────────────────────────────────────────
 const statusDot = document.getElementById("statusDot");
 const statusText = document.getElementById("statusText");
 const liveBanner = document.getElementById("liveBanner");
@@ -38,7 +24,7 @@ const permBlock = document.getElementById("permBlock");
 const enableBtn = document.getElementById("enableBtn");
 const installBtn = document.getElementById("installBtn");
 const resetBtn = document.getElementById("resetBtn");
-// ───────── Tabs ─────────
+const themeToggleBtn = document.getElementById("themeToggleBtn");
 const homeTab = document.getElementById("homeTab");
 const historyTab = document.getElementById("historyTab");
 
@@ -59,9 +45,6 @@ historyTab.onclick = () => {
   homeTab.classList.remove("active");
 };
 
-// ─────────────────────────────────────────────────────────────
-// PWA Install Prompt
-// ─────────────────────────────────────────────────────────────
 let deferredInstallPrompt = null;
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
@@ -78,9 +61,26 @@ if (installBtn) {
   });
 }
 
-// ─────────────────────────────────────────────────────────────
-// Service Worker Registration (for FCM background notifications)
-// ─────────────────────────────────────────────────────────────
+const body = document.body;
+function initTheme() {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "light") {
+    body.classList.add("light-theme");
+    themeToggleBtn.textContent = "🌙";
+  } else {
+    themeToggleBtn.textContent = "☀️";
+  }
+}
+if (themeToggleBtn) {
+  themeToggleBtn.onclick = () => {
+    body.classList.toggle("light-theme");
+    const isLight = body.classList.contains("light-theme");
+    localStorage.setItem("theme", isLight ? "light" : "dark");
+    themeToggleBtn.textContent = isLight ? "🌙" : "☀️";
+  };
+}
+initTheme();
+
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
     .register("./firebase-messaging-sw.js")
@@ -88,9 +88,6 @@ if ("serviceWorker" in navigator) {
     .catch((err) => console.error("❌ SW registration failed:", err));
 }
 
-// ─────────────────────────────────────────────────────────────
-// FCM Setup
-// ─────────────────────────────────────────────────────────────
 let messaging = null;
 
 async function setupFCM() {
@@ -109,14 +106,11 @@ async function setupFCM() {
     permBlock.style.display = "none";
     await registerToken();
   } else if (permission === "default") {
-    // Show the enable button
     permBlock.style.display = "block";
   } else {
-    // Denied
     permBlock.style.display = "none";
   }
 
-  // Handle foreground messages
   onMessage(messaging, (payload) => {
     console.log("📩 Foreground FCM:", payload);
     const title = payload.data?.title || payload.notification?.title || "Wildlife Alert";
@@ -153,9 +147,6 @@ if (enableBtn) {
   });
 }
 
-// ─────────────────────────────────────────────────────────────
-// Backend Health Check
-// ─────────────────────────────────────────────────────────────
 async function checkHealth() {
   try {
     const res = await fetch(`${SERVER_URL}/health`, { signal: AbortSignal.timeout(4000) });
@@ -174,9 +165,6 @@ async function checkHealth() {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Fetch & Render Detections (polling every 5s)
-// ─────────────────────────────────────────────────────────────
 let lastSeenTime = null;
 let allDetections = [];
 
@@ -192,11 +180,9 @@ async function fetchDetections() {
     statAlerts.textContent = data.length.toString();
     renderAlertList(data);
 
-    // Show banner only when a genuinely new detection arrives
     const latest = data[0];
     if (latest && latest.time !== lastSeenTime) {
       if (lastSeenTime !== null) {
-        // Not the first load — it's actually new
         showBanner(latest.message || `⚠️ ${latest.animal} detected at ${latest.location}`, latest.imageUrl || "");
         playAlertSound();
       }
@@ -211,22 +197,17 @@ function renderAlertList(detections) {
 
   const latestList = document.getElementById("latestList");
 
-  // Latest 3
   latestList.innerHTML = "";
   detections.slice(0, 3).forEach(d => {
     latestList.appendChild(createAlertItem(d));
   });
 
-  // Full history
   alertList.innerHTML = "";
   detections.forEach(d => {
     alertList.appendChild(createAlertItem(d));
   });
 }
 
-// ─────────────────────────────────────────────────────────────
-// Live Alert Banner
-// ─────────────────────────────────────────────────────────────
 let bannerTimer = null;
 function showBanner(message, imageUrl = "") {
   bannerText.textContent = message;
@@ -241,9 +222,6 @@ function showBanner(message, imageUrl = "") {
   bannerTimer = setTimeout(() => { liveBanner.style.display = "none"; }, 12000);
 }
 
-// ─────────────────────────────────────────────────────────────
-// Alert Sound (synthesized beep — no external file needed)
-// ─────────────────────────────────────────────────────────────
 function playAlertSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -262,9 +240,6 @@ function playAlertSound() {
   } catch (_) { }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Utility
-// ─────────────────────────────────────────────────────────────
 function escHtml(str) {
   return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -288,9 +263,6 @@ function createAlertItem(d) {
   return item;
 }
 
-// ─────────────────────────────────────────────────────────────
-// Reset System
-// ─────────────────────────────────────────────────────────────
 if (resetBtn) {
   resetBtn.addEventListener("click", async () => {
     if (!confirm("Are you sure you want to delete ALL alerts and registered devices? This cannot be undone.")) return;
@@ -309,9 +281,6 @@ if (resetBtn) {
   });
 }
 
-// ─────────────────────────────────────────────────────────────
-// Boot
-// ─────────────────────────────────────────────────────────────
 setupFCM();
 checkHealth();
 fetchDetections();
