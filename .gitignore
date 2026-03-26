@@ -13,6 +13,7 @@ backend/firebase-key.json
 # Local App Data & Logs
 backend/detections.json
 backend/detections/
+backend/latest.jpg
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

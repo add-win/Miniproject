@@ -8,11 +8,11 @@ importScripts("./config.js");
 
 // ⚠️  Keep this in sync with the config in app.js
 firebase.initializeApp({
-  apiKey:            CONFIG.apiKey,
-  authDomain:        "wildguard-92dff.firebaseapp.com",
-  projectId:         "wildguard-92dff",
-  messagingSenderId: "786743626796",
-  appId:             "1:786743626796:web:1740d36e4b3aa767665589",
+  apiKey: CONFIG.apiKey,
+  authDomain: "wildguard-d6b3a.firebaseapp.com",
+  projectId: "wildguard-d6b3a",
+  messagingSenderId: "667786072615",
+  appId: "1:667786072615:web:5270b954d91a1787d6f402",
 });
 
 const messaging = firebase.messaging();
@@ -22,8 +22,8 @@ messaging.onBackgroundMessage((payload) => {
   console.log("[SW] Background FCM received:", payload);
 
   const title = payload.notification?.title || "⚠️ Wildlife Alert";
-  const body  = payload.notification?.body  || "Animal detected!";
-  const icon  = payload.data?.imageUrl      || "./icons/icon-192.png";
+  const body = payload.notification?.body || "Animal detected!";
+  const icon = payload.data?.imageUrl || "./icons/icon-192.png";
 
   self.registration.showNotification(title, {
     body,

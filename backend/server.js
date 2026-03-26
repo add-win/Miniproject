@@ -226,9 +226,21 @@ app.get("/health", (req, res) => {
 // ─────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
+  const os = require('os');
+  const networkInterfaces = os.networkInterfaces();
+  let ipAddress = 'localhost';
+  
+  for (const interfaceName in networkInterfaces) {
+    for (const iface of networkInterfaces[interfaceName]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        ipAddress = iface.address;
+      }
+    }
+  }
+
   console.log("\n🚀 WildGuard Backend running");
   console.log(`   Local:    http://localhost:${PORT}`);
-  console.log(`   Network:  http://192.168.1.4:${PORT}`);
+  console.log(`   Network:  http://${ipAddress}:${PORT}`);
   console.log(`   Health:   http://localhost:${PORT}/health\n`);
 });
 

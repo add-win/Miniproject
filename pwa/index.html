@@ -1,400 +1,256 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0f2027" />
-  <meta name="description" content="WildGuard - Real-time wildlife intrusion alert system" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#020617" />
+  <meta name="description" content="WildGuard - Next-Gen Wildlife Intrusion Monitor" />
   <title>WildGuard</title>
+  
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS Compiler -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class', // Enables toggle via HTML class
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Outfit', 'sans-serif'] },
+          colors: {
+            obsidian: '#020617',
+            emerald: { 400: '#34d399', 500: '#10b981', 600: '#059669' },
+            amber: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' },
+            rose: { 400: '#fb7185', 500: '#f43f5e', 600: '#e11d48' },
+            cyan: { 500: '#06b6d4', 600: '#0891b2' }
+          },
+          animation: {
+            'blob': 'blob 10s infinite alternate',
+            'ping': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+            'slide-in': 'slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+          },
+          keyframes: {
+            blob: {
+              '0%': { transform: 'translate(0px, 0px) scale(1)' },
+              '50%': { transform: 'translate(30px, -50px) scale(1.1)' },
+              '100%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+            },
+            slideIn: {
+              '0%': { opacity: 0, transform: 'translateY(20px)' },
+              '100%': { opacity: 1, transform: 'translateY(0)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Tailwind Script Styles for Glassmorphism -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /* Reverting to highly transparent glass that adapts to Light & Dark Mode */
+      .glass {
+        @apply bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-xl;
+      }
+      .glass-heavy {
+        @apply bg-white/70 dark:bg-slate-950/70 backdrop-blur-3xl border border-white/60 dark:border-white/20 shadow-2xl;
+      }
+      .fade-view { 
+        animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+      }
+      /* Nav Styling correctly placed for Tailwind processing */
+      .nav-btn { 
+        @apply text-slate-500 dark:text-slate-400 transition-all duration-300; 
+      }
+      .nav-btn:hover { 
+        @apply text-slate-800 dark:text-slate-100; 
+      }
+      .nav-btn.active { 
+        @apply bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-black shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]; 
+      }
+    }
+  </style>
 
   <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    /* Fluid Utilities & Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(100,100,100,0.3); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(100,100,100,0.5); }
+    
+    body { overflow-x: hidden; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
-    :root {
-      --bg: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      --card: rgba(255, 255, 255, 0.08);
-      --card-border: rgba(255, 255, 255, 0.12);
-      --accent: #00e5ff;
-      --danger: #ff4d4d;
-      --warning: #ffb300;
-      --success: #00e676;
-      --text: #e0f7fa;
-      --muted: rgba(255, 255, 255, 0.5);
-    }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
-      min-height: 100vh;
-      color: var(--text);
-    }
-
-    /* ── Header ── */
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid var(--card-border);
-    }
-
-    header h1 {
-      font-size: 1.4rem;
-      letter-spacing: 1px;
-    }
-
-    header h1 span {
-      color: var(--accent);
-    }
-
-    #statusDot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #555;
-      display: inline-block;
-      margin-right: 6px;
-      transition: background 0.4s;
-    }
-
-    #statusDot.online {
-      background: var(--success);
-      box-shadow: 0 0 6px var(--success);
-    }
-
-    #statusDot.offline {
-      background: var(--danger);
-    }
-
-    #installBtn {
-      display: none;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    /* ── Live Alert Banner ── */
+    
     #liveBanner {
-      display: none;
-      background: var(--danger);
-      padding: 14px 20px;
-      text-align: center;
-      font-weight: 700;
-      font-size: 1rem;
-      animation: pulse 1s infinite alternate;
-      position: relative;
+      transform: translateX(120%);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    #liveBanner img {
-      display: block;
-      margin: 10px auto 0;
-      max-width: 220px;
-      border-radius: 10px;
-      border: 2px solid #fff;
-    }
-
-    @keyframes pulse {
-      from {
-        background: #ff4d4d;
-      }
-
-      to {
-        background: #cc0000;
-      }
-    }
-
-    /* ── Main ── */
-    main {
-      padding: 20px;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    /* ── Stats row ── */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .stat-card {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 16px 12px;
-      text-align: center;
-    }
-
-    .stat-card .val {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--accent);
-    }
-
-    .stat-card .lbl {
-      font-size: 0.72rem;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    /* ── Section title ── */
-    .section-title {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--muted);
-      margin: 22px 0 10px;
-    }
-
-    /* ── Permission block ── */
-    #permBlock {
-      background: var(--card);
-      border: 1px solid var(--warning);
-      border-radius: 14px;
-      padding: 20px;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    #permBlock p {
-      margin-bottom: 14px;
-      font-size: 0.95rem;
-      color: var(--warning);
-    }
-
-    #enableBtn {
-      background: var(--warning);
-      color: #000;
-      border: none;
-      padding: 10px 28px;
-      border-radius: 20px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    /* ── Alert list ── */
-    #alertList {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .alert-item {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 16px;
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
-      animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-8px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .alert-item.HIGH {
-      border-left: 4px solid var(--danger);
-    }
-
-    .alert-item.MEDIUM {
-      border-left: 4px solid var(--warning);
-    }
-
-    .alert-item.LOW {
-      border-left: 4px solid var(--success);
-    }
-
-    .alert-icon {
-      font-size: 2rem;
-      line-height: 1;
-    }
-
-    .alert-body {
-      flex: 1;
-    }
-
-    .alert-body .animal {
-      font-weight: 700;
-      font-size: 1rem;
-    }
-
-    .alert-body .location {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    .alert-body .time {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    .badge {
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 2px 10px;
-      border-radius: 20px;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
-
-    .badge.HIGH {
-      background: var(--danger);
-      color: #fff;
-    }
-
-    .badge.MEDIUM {
-      background: var(--warning);
-      color: #000;
-    }
-
-    .badge.LOW {
-      background: var(--success);
-      color: #000;
-    }
-
-    #emptyState {
-      text-align: center;
-      color: var(--muted);
-      padding: 40px 20px;
-      font-size: 0.95rem;
-    }
-
-    #emptyState .icon {
-      font-size: 3rem;
-      margin-bottom: 10px;
-    }
-
-    /* ── Footer ── */
-    footer {
-      text-align: center;
-      padding: 20px;
-      color: var(--muted);
-      font-size: 0.75rem;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .tabs button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 20px;
-      background: var(--card);
-      color: var(--text);
-      cursor: pointer;
-    }
-
-    .tabs button.active {
-      background: var(--accent);
-      color: #000;
+    #liveBanner.show {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
     }
   </style>
 </head>
 
-<body>
-
-  <header>
-    <h1>🐾 Wild<span>Guard</span></h1>
-    <div>
-      <span id="statusDot"></span>
-      <span id="statusText" style="font-size:0.8rem;color:var(--muted)">Connecting...</span>
-    </div>
-    <button id="installBtn">⬇ Install App</button>
-  </header>
-
-  <!-- Live alert banner (shown when a new detection arrives) -->
-  <div id="liveBanner">
-    <span id="bannerText">⚠️ Alert!</span>
-    <img id="bannerImg" src="" alt="" style="display:none" />
+<body class="bg-slate-50 dark:bg-obsidian text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col relative pb-32 transition-colors duration-500">
+  
+  <!-- Cinematic Background Ambient Glows -->
+  <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+    <div class="absolute -top-20 -left-20 w-96 h-96 bg-emerald-400/30 dark:bg-emerald-500/10 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob"></div>
+    <div class="absolute top-1/4 right-0 w-96 h-96 bg-cyan-400/30 dark:bg-cyan-500/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob" style="animation-delay: 2s"></div>
+    <div class="absolute -bottom-20 left-1/3 w-[30rem] h-[30rem] bg-rose-400/20 dark:bg-rose-500/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob" style="animation-delay: 4s"></div>
   </div>
 
-  <main>
-
-    <!-- Permission block -->
-    <div id="permBlock" style="display:none;">
-      <p>Notifications are disabled. Enable them to keep receiving wildlife alerts.</p>
-      <button id="enableBtn">Register Device</button>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <button id="homeTab" class="active">Home</button>
-      <button id="historyTab">History</button>
-    </div>
-
-    <!-- Home (latest 3 alerts) -->
-    <div id="homeView">
-      <div class="stats">
-        <div class="stat-card">
-          <div class="val" id="statAlerts">0</div>
-          <div class="lbl">Total Alerts</div>
-        </div>
-        <div class="stat-card">
-          <div class="val" id="statDevices">—</div>
-          <div class="lbl">Devices</div>
-        </div>
+  <!-- Smart Header -->
+  <header class="glass sticky top-0 z-50 px-6 py-5 flex items-center justify-between !shadow-black/10 dark:!shadow-black/60 rounded-b-3xl sm:rounded-none border-t-0">
+    <div class="flex items-center gap-4">
+      <div class="relative flex items-center justify-center w-12 h-12 rounded-full bg-white/60 dark:bg-slate-800/80 border border-slate-300/50 dark:border-slate-600/50 shadow-inner">
+        <span class="text-3xl drop-shadow-sm">🐾</span>
+        <span id="statusPing" class="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_8px_#10b981] dark:shadow-[0_0_10px_#34d399]"></span>
       </div>
-      <div class="section-title">Latest Alerts</div>
-      <div id="latestList"></div>
+      <div>
+        <h1 class="font-bold text-3xl tracking-tight text-slate-900 dark:text-white leading-tight drop-shadow-sm">Wild<span class="text-emerald-600 dark:text-emerald-400">Guard</span></h1>
+        <p id="statusText" class="text-sm text-emerald-600 dark:text-emerald-400 font-bold tracking-wide uppercase mt-0.5">System Online</p>
+      </div>
     </div>
+    
+    <div class="flex items-center gap-3">
+      <!-- Custom Theme Toggle -->
+      <button id="themeToggleBtn" class="w-11 h-11 flex items-center justify-center rounded-full glass hover:scale-105 active:scale-95 transition-transform" aria-label="Toggle Theme">
+        <span class="block dark:hidden text-2xl drop-shadow-sm">🌒</span>
+        <span class="hidden dark:block text-2xl drop-shadow-sm">☀️</span>
+      </button>
 
-    <!-- History -->
-    <div id="historyView" style="display:none;">
-      <div class="section-title">All Alerts</div>
-      <div id="alertList"></div>
+      <button id="installBtn" class="hidden bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 text-base font-bold px-6 py-2.5 rounded-full transition-transform active:scale-95 shadow-md dark:shadow-[0_0_15px_rgba(52,211,153,0.4)] tracking-wide">
+        Install
+      </button>
     </div>
+  </header>
 
-    <!-- Reset Option -->
-    <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
-      <button id="resetBtn" style="background: var(--danger); border: none; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-        ⚠️ Reset All Data
+  <!-- Sleek Top-Right Toast Notification -->
+  <div id="liveBanner" class="fixed top-6 right-4 sm:right-6 w-[88vw] sm:w-[340px] glass-heavy !bg-white/95 dark:!bg-rose-950/95 !border-rose-400/50 dark:!border-rose-500/50 z-[70] rounded-2xl p-4 flex items-center gap-3.5 shadow-2xl shadow-rose-500/25">
+    <div class="text-3xl drop-shadow-md relative">
+      <span class="absolute inset-0 animate-ping opacity-50">⚠️</span>
+      ⚠️
+    </div>
+    <div class="flex-1 min-w-0">
+      <h4 class="text-[10px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-[0.15em] mb-0.5 opacity-90">Threat Detected</h4>
+      <p id="bannerText" class="text-slate-900 dark:text-white text-sm tracking-wide font-black truncate">Live Alert!</p>
+    </div>
+    <img id="bannerImg" src="" alt="" class="hidden w-14 h-14 object-cover rounded-xl border-2 border-slate-200 dark:border-rose-500/30 shadow-inner shrink-0" />
+  </div>
+
+  <!-- Central Dashboard -->
+  <main class="flex-1 w-full max-w-2xl mx-auto p-6 md:p-8">
+    
+    <!-- Permissions Block -->
+    <div id="permBlock" class="hidden mb-8 glass-heavy !bg-amber-100/90 dark:!bg-amber-950/80 !border-amber-400/50 dark:!border-amber-500/50 rounded-3xl p-6 text-center animate-slide-in shadow-xl shadow-amber-500/10">
+      <div class="text-5xl mb-4 drop-shadow-lg">🔔</div>
+      <h3 class="text-amber-700 dark:text-amber-400 font-black text-xl mb-2 tracking-wide">Alerts Disabled</h3>
+      <p class="text-base text-slate-700 dark:text-slate-200 mb-6 font-medium">Push notifications must be enabled to monitor active wildlife threats.</p>
+      <button id="enableBtn" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white dark:text-amber-950 font-black text-lg py-3.5 px-8 rounded-full transition-transform active:scale-95 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+        Register Device Now
       </button>
     </div>
 
+    <!-- MAIN VIEW: Monitor -->
+    <div id="homeView" class="fade-view">
+      
+      <!-- Sleek Stats Row -->
+      <div class="grid grid-cols-2 gap-5 mb-10">
+        <div class="glass rounded-3xl p-6 md:p-8 relative overflow-hidden group">
+          <div class="absolute -right-4 -top-4 w-32 h-32 bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full transition-colors duration-500"></div>
+          <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 drop-shadow-sm">Total Alerts</p>
+          <div class="text-6xl font-black text-slate-800 dark:text-white tracking-tight drop-shadow-sm" id="statAlerts">0</div>
+        </div>
+        <div class="glass rounded-3xl p-6 md:p-8 relative overflow-hidden group">
+          <div class="absolute -right-4 -top-4 w-32 h-32 bg-cyan-500/10 rounded-full transition-colors duration-500"></div>
+          <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 drop-shadow-sm">Sync Devices</p>
+          <div class="text-6xl font-black text-slate-800 dark:text-white tracking-tight drop-shadow-sm" id="statDevices">—</div>
+        </div>
+      </div>
+
+      <!-- Title Header -->
+      <div class="flex items-center justify-between mb-6 px-1">
+        <h2 class="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest drop-shadow-sm">Live Scan Feed</h2>
+        <div class="flex items-center gap-2.5 bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/30 px-3.5 py-1.5 rounded-full shadow-inner">
+           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping"></span>
+           <span class="text-xs text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">Radar Active</span>
+        </div>
+      </div>
+      
+      <!-- Live Monitoring Elements Go Here via JS -->
+      <div id="latestList" class="flex flex-col gap-5">
+        <!-- Minimal Skeleton Loaders for Fluidity -->
+        <div class="glass rounded-3xl p-5 flex gap-5 h-36 animate-pulse opacity-60">
+          <div class="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+          <div class="flex-1 space-y-4 py-1">
+            <div class="h-4 bg-slate-300 dark:bg-slate-600 rounded w-1/3"></div>
+            <div class="h-3 bg-slate-300 dark:bg-slate-600 rounded w-1/2"></div>
+            <div class="h-3 bg-slate-300 dark:bg-slate-600 rounded w-5/6"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARCHIVE VIEW: History -->
+    <div id="historyView" class="hidden fade-view">
+      <div class="flex items-center justify-between mb-6 px-1">
+        <h2 class="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest drop-shadow-sm">Incident Logs</h2>
+        <button id="resetBtn" class="text-xs font-bold uppercase tracking-widest text-rose-600 dark:text-rose-300 hover:text-white bg-rose-100 dark:bg-rose-500/20 hover:bg-rose-500 dark:hover:bg-rose-500/40 px-4 py-2.5 rounded-full border border-rose-300 dark:border-rose-500/30 transition-all active:scale-95 shadow-sm">
+          Erase Logs
+        </button>
+      </div>
+      
+      <div id="alertList" class="flex flex-col gap-5">
+        <!-- History Elements Go Here -->
+      </div>
+    </div>
   </main>
 
-  <footer>WildGuard PWA &nbsp;·&nbsp; Real-time wildlife monitoring</footer>
+  <!-- Mobile-Centric Floating Bottom Nav Bar -->
+  <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 glass-heavy rounded-full px-2.5 py-2.5 flex items-center shadow-[0_10px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50 w-[90%] max-w-md justify-between backdrop-blur-3xl">
+    <button id="homeTab" class="nav-btn active flex-1 flex flex-col items-center justify-center py-3 rounded-full">
+      <svg class="w-7 h-7 mb-1.5 drop-shadow-sm pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+      </svg>
+      <span class="text-[11px] font-black uppercase tracking-[0.15em] drop-shadow-sm pointer-events-none">Monitor</span>
+    </button>
+    <button id="historyTab" class="nav-btn flex-1 flex flex-col items-center justify-center py-3 rounded-full">
+      <svg class="w-7 h-7 mb-1.5 drop-shadow-sm pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span class="text-[11px] font-black uppercase tracking-[0.15em] drop-shadow-sm pointer-events-none">Archive</span>
+    </button>
+  </nav>
 
+  <!-- Theme Script (Inline to prevent flicker before load) -->
+  <script>
+    if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+
+  <!-- Load Everything via Distributed ES Modules -->
   <script src="./config.js"></script>
   <script type="module" src="./app.js"></script>
+  
 </body>
-
 </html>
