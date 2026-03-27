@@ -40,6 +40,15 @@ export async function initFCM() {
     const img = payload.data?.imageUrl || "";
     UI.showLiveBanner(`${title} — ${body}`, img);
     UI.playAlertSound();
+
+    // Also fire OS system notification so it appears in status bar even in foreground
+    if (Notification.permission === "granted") {
+      new Notification(title, {
+        body,
+        icon: "/icons/icon-192.png",
+        tag: "wildguard-foreground-alert",
+      });
+    }
   });
 }
 

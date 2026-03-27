@@ -1,21 +1,50 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#020617" />
   <meta name="description" content="WildGuard - Next-Gen Wildlife Intrusion Monitor" />
   <title>WildGuard</title>
-  
+
   <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" href="./icons/icon-192.png" />
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  
+  <!-- Emoji Favicon matching the Header (Light Theme Background for Dark Browser Tabs) -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23ffffff%22/><text x=%2250%22 y=%22.9em%22 text-anchor=%22middle%22 font-size=%2280%22>🐾</text></svg>" />
+
+  <!-- iOS Fallback generated below via Canvas -->
+  <link id="ios-icon" rel="apple-touch-icon" href="./icons/icon-192.png" />
+
+  <script>
+    // Safari completely ignores SVG icons on iPhones. 
+    // We dynamically render a physical PNG here so iOS correctly extracts it for the Homescreen.
+    document.addEventListener("DOMContentLoaded", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 256; canvas.height = 256;
+      const ctx = canvas.getContext("2d");
+
+      // Light Theme background (#ffffff) for high visibility on iPhone screens
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, 256, 256);
+
+      // Draw Paw Print Emoji
+      ctx.font = "160px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🐾", 128, 145);
+
+      // Convert to pure PNG Base64 and inject it for iOS Share Sheet
+      document.getElementById("ios-icon").href = canvas.toDataURL("image/png");
+    });
+  </script>
+
   <!-- Premium Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
   <!-- Tailwind CSS Compiler -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -34,7 +63,9 @@
           animation: {
             'blob': 'blob 10s infinite alternate',
             'ping': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
-            'slide-in': 'slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+            'pulse-soft': 'pulseSoft 3s ease-out infinite',
+            'slide-in': 'slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            'image-bloom': 'imageBloom 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards'
           },
           keyframes: {
             blob: {
@@ -45,6 +76,14 @@
             slideIn: {
               '0%': { opacity: 0, transform: 'translateY(20px)' },
               '100%': { opacity: 1, transform: 'translateY(0)' }
+            },
+            pulseSoft: {
+              '0%': { transform: 'scale(1)', opacity: '0.4' },
+              '100%': { transform: 'scale(1.8)', opacity: '0' }
+            },
+            imageBloom: {
+              '0%': { filter: 'blur(12px) brightness(1.2)', opacity: '0', transform: 'scale(1.1)' },
+              '100%': { filter: 'blur(0px) brightness(1)', opacity: '1', transform: 'scale(1)' }
             }
           }
         }
@@ -55,7 +94,6 @@
   <!-- Tailwind Script Styles for Glassmorphism -->
   <style type="text/tailwindcss">
     @layer utilities {
-      /* Reverting to highly transparent glass that adapts to Light & Dark Mode */
       .glass {
         @apply bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-xl;
       }
@@ -65,39 +103,60 @@
       .fade-view { 
         animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
       }
-      /* Nav Styling correctly placed for Tailwind processing */
       .nav-btn { 
-        @apply text-slate-500 dark:text-slate-400 transition-all duration-300; 
+        @apply text-slate-500 dark:text-slate-400 transition-transform duration-200 active:scale-[0.90]; 
       }
       .nav-btn:hover { 
         @apply text-slate-800 dark:text-slate-100; 
       }
       .nav-btn.active { 
-        @apply bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-black shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]; 
+        @apply bg-white/40 dark:bg-white/10 text-emerald-700 dark:text-emerald-400 font-extrabold shadow-[inset_0_2px_10px_rgba(255,255,255,0.3)] dark:shadow-[inset_0_1px_5px_rgba(255,255,255,0.1)]; 
       }
     }
   </style>
 
   <style>
     /* Fluid Utilities & Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(100,100,100,0.3); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(100,100,100,0.5); }
-    
-    body { overflow-x: hidden; }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
+    ::-webkit-scrollbar {
+      width: 6px;
     }
-    
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 100, 100, 0.3);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 100, 100, 0.5);
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     #liveBanner {
       transform: translateX(120%);
       opacity: 0;
       pointer-events: none;
       transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
     #liveBanner.show {
       transform: translateX(0);
       opacity: 1;
@@ -106,93 +165,149 @@
   </style>
 </head>
 
-<body class="bg-slate-50 dark:bg-obsidian text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col relative pb-32 transition-colors duration-500">
-  
+<body
+  class="bg-slate-50 dark:bg-obsidian text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col relative pb-32 transition-colors duration-500">
+
   <!-- Cinematic Background Ambient Glows -->
   <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-    <div class="absolute -top-20 -left-20 w-96 h-96 bg-emerald-400/30 dark:bg-emerald-500/10 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob"></div>
-    <div class="absolute top-1/4 right-0 w-96 h-96 bg-cyan-400/30 dark:bg-cyan-500/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob" style="animation-delay: 2s"></div>
-    <div class="absolute -bottom-20 left-1/3 w-[30rem] h-[30rem] bg-rose-400/20 dark:bg-rose-500/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob" style="animation-delay: 4s"></div>
+    <div
+      class="absolute -top-20 -left-20 w-96 h-96 bg-emerald-400/30 dark:bg-emerald-500/10 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob">
+    </div>
+    <div
+      class="absolute top-1/4 right-0 w-96 h-96 bg-cyan-400/30 dark:bg-cyan-500/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob"
+      style="animation-delay: 2s"></div>
+    <div
+      class="absolute -bottom-20 left-1/3 w-[30rem] h-[30rem] bg-rose-400/20 dark:bg-rose-500/5 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob"
+      style="animation-delay: 4s"></div>
   </div>
 
   <!-- Smart Header -->
-  <header class="glass sticky top-0 z-50 px-6 py-5 flex items-center justify-between !shadow-black/10 dark:!shadow-black/60 rounded-b-3xl sm:rounded-none border-t-0">
+  <header
+    class="glass sticky top-0 z-50 px-6 py-5 flex items-center justify-between !shadow-black/10 dark:!shadow-black/60 rounded-b-3xl border-t-0">
     <div class="flex items-center gap-4">
-      <div class="relative flex items-center justify-center w-12 h-12 rounded-full bg-white/60 dark:bg-slate-800/80 border border-slate-300/50 dark:border-slate-600/50 shadow-inner">
+      <div
+        class="relative flex items-center justify-center w-12 h-12 rounded-full bg-white/60 dark:bg-slate-800/80 border border-slate-300/50 dark:border-slate-600/50 shadow-inner">
         <span class="text-3xl drop-shadow-sm">🐾</span>
-        <span id="statusPing" class="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_8px_#10b981] dark:shadow-[0_0_10px_#34d399]"></span>
+        <span id="statusPing"
+          class="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_8px_#10b981] dark:shadow-[0_0_10px_#34d399]"></span>
       </div>
       <div>
-        <h1 class="font-bold text-3xl tracking-tight text-slate-900 dark:text-white leading-tight drop-shadow-sm">Wild<span class="text-emerald-600 dark:text-emerald-400">Guard</span></h1>
-        <p id="statusText" class="text-sm text-emerald-600 dark:text-emerald-400 font-bold tracking-wide uppercase mt-0.5">System Online</p>
+        <h1 class="font-bold text-3xl tracking-tight text-slate-900 dark:text-white leading-tight drop-shadow-sm">
+          Wild<span class="text-emerald-600 dark:text-emerald-400">Guard</span></h1>
+        <p id="statusText"
+          class="text-sm text-emerald-600 dark:text-emerald-400 font-bold tracking-wide uppercase mt-0.5">System Online
+        </p>
       </div>
     </div>
-    
+
     <div class="flex items-center gap-3">
       <!-- Custom Theme Toggle -->
-      <button id="themeToggleBtn" class="w-11 h-11 flex items-center justify-center rounded-full glass hover:scale-105 active:scale-95 transition-transform" aria-label="Toggle Theme">
+      <button id="themeToggleBtn"
+        class="w-11 h-11 flex items-center justify-center rounded-full glass hover:scale-105 active:scale-95 transition-transform"
+        aria-label="Toggle Theme">
         <span class="block dark:hidden text-2xl drop-shadow-sm">🌒</span>
         <span class="hidden dark:block text-2xl drop-shadow-sm">☀️</span>
       </button>
 
-      <button id="installBtn" class="hidden bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 text-base font-bold px-6 py-2.5 rounded-full transition-transform active:scale-95 shadow-md dark:shadow-[0_0_15px_rgba(52,211,153,0.4)] tracking-wide">
+      <button id="installBtn"
+        class="hidden bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 text-base font-bold px-6 py-2.5 rounded-full transition-transform active:scale-95 shadow-md dark:shadow-[0_0_15px_rgba(52,211,153,0.4)] tracking-wide">
         Install
       </button>
     </div>
   </header>
 
   <!-- Sleek Top-Right Toast Notification -->
-  <div id="liveBanner" class="fixed top-6 right-4 sm:right-6 w-[88vw] sm:w-[340px] glass-heavy !bg-white/95 dark:!bg-rose-950/95 !border-rose-400/50 dark:!border-rose-500/50 z-[70] rounded-2xl p-4 flex items-center gap-3.5 shadow-2xl shadow-rose-500/25">
+  <div id="liveBanner"
+    class="fixed top-6 right-4 sm:right-6 w-[88vw] sm:w-[340px] glass-heavy !bg-white/95 dark:!bg-rose-950/95 !border-rose-400/50 dark:!border-rose-500/50 z-[70] rounded-2xl p-4 flex items-center gap-3.5 shadow-2xl shadow-rose-500/25">
     <div class="text-3xl drop-shadow-md relative">
       <span class="absolute inset-0 animate-ping opacity-50">⚠️</span>
       ⚠️
     </div>
     <div class="flex-1 min-w-0">
-      <h4 class="text-[10px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-[0.15em] mb-0.5 opacity-90">Threat Detected</h4>
-      <p id="bannerText" class="text-slate-900 dark:text-white text-sm tracking-wide font-black truncate">Live Alert!</p>
+      <h4 class="text-[10px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-[0.15em] mb-0.5 opacity-90">
+        Threat Detected</h4>
+      <p id="bannerText" class="text-slate-900 dark:text-white text-sm tracking-wide font-black truncate">Live Alert!
+      </p>
     </div>
-    <img id="bannerImg" src="" alt="" class="hidden w-14 h-14 object-cover rounded-xl border-2 border-slate-200 dark:border-rose-500/30 shadow-inner shrink-0" />
+    <img id="bannerImg" src="" alt=""
+      class="hidden w-14 h-14 object-cover rounded-xl border-2 border-slate-200 dark:border-rose-500/30 shadow-inner shrink-0" />
   </div>
 
   <!-- Central Dashboard -->
   <main class="flex-1 w-full max-w-2xl mx-auto p-6 md:p-8">
-    
+
     <!-- Permissions Block -->
-    <div id="permBlock" class="hidden mb-8 glass-heavy !bg-amber-100/90 dark:!bg-amber-950/80 !border-amber-400/50 dark:!border-amber-500/50 rounded-3xl p-6 text-center animate-slide-in shadow-xl shadow-amber-500/10">
+    <div id="permBlock"
+      class="hidden mb-8 glass-heavy !bg-amber-100/90 dark:!bg-amber-950/80 !border-amber-400/50 dark:!border-amber-500/50 rounded-3xl p-6 text-center animate-slide-in shadow-xl shadow-amber-500/10">
       <div class="text-5xl mb-4 drop-shadow-lg">🔔</div>
       <h3 class="text-amber-700 dark:text-amber-400 font-black text-xl mb-2 tracking-wide">Alerts Disabled</h3>
-      <p class="text-base text-slate-700 dark:text-slate-200 mb-6 font-medium">Push notifications must be enabled to monitor active wildlife threats.</p>
-      <button id="enableBtn" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white dark:text-amber-950 font-black text-lg py-3.5 px-8 rounded-full transition-transform active:scale-95 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+      <p class="text-base text-slate-700 dark:text-slate-200 mb-6 font-medium">Push notifications must be enabled to
+        monitor active wildlife threats.</p>
+      <button id="enableBtn"
+        class="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white dark:text-amber-950 font-black text-lg py-3.5 px-8 rounded-full transition-transform active:scale-95 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
         Register Device Now
       </button>
     </div>
 
     <!-- MAIN VIEW: Monitor -->
     <div id="homeView" class="fade-view">
-      
+
       <!-- Sleek Stats Row -->
       <div class="grid grid-cols-2 gap-5 mb-10">
         <div class="glass rounded-3xl p-6 md:p-8 relative overflow-hidden group">
-          <div class="absolute -right-4 -top-4 w-32 h-32 bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full transition-colors duration-500"></div>
-          <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 drop-shadow-sm">Total Alerts</p>
-          <div class="text-6xl font-black text-slate-800 dark:text-white tracking-tight drop-shadow-sm" id="statAlerts">0</div>
+          <div
+            class="absolute -right-4 -top-4 w-32 h-32 bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full transition-colors duration-500">
+          </div>
+          <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 drop-shadow-sm">
+            Total Alerts</p>
+          <div class="text-6xl font-black text-slate-800 dark:text-white tracking-tight drop-shadow-sm" id="statAlerts">
+            0</div>
         </div>
         <div class="glass rounded-3xl p-6 md:p-8 relative overflow-hidden group">
-          <div class="absolute -right-4 -top-4 w-32 h-32 bg-cyan-500/10 rounded-full transition-colors duration-500"></div>
-          <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 drop-shadow-sm">Sync Devices</p>
-          <div class="text-6xl font-black text-slate-800 dark:text-white tracking-tight drop-shadow-sm" id="statDevices">—</div>
+          <div class="absolute -right-4 -top-4 w-32 h-32 bg-cyan-500/10 rounded-full transition-colors duration-500">
+          </div>
+          <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 drop-shadow-sm">
+            Synced Devices</p>
+          <div class="text-6xl font-black text-slate-800 dark:text-white tracking-tight drop-shadow-sm"
+            id="statDevices">—</div>
         </div>
       </div>
 
       <!-- Title Header -->
       <div class="flex items-center justify-between mb-6 px-1">
-        <h2 class="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest drop-shadow-sm">Live Scan Feed</h2>
-        <div class="flex items-center gap-2.5 bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/30 px-3.5 py-1.5 rounded-full shadow-inner">
-           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping"></span>
-           <span class="text-xs text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">Radar Active</span>
+        <h2 class="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest drop-shadow-sm">Live
+          Scan Feed</h2>
+        <div
+          class="flex items-center gap-2.5 bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/30 px-3.5 py-1.5 rounded-full shadow-inner">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping"></span>
+          <span class="text-xs text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">Radar
+            Active</span>
         </div>
       </div>
-      
+
+      <!-- Futuristic Pulsing Radar Component -->
+      <div class="glass rounded-3xl p-8 mb-10 flex flex-col items-center justify-center relative overflow-hidden group">
+        <div
+          class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500 via-transparent to-transparent">
+        </div>
+        <div class="relative w-48 h-48 rounded-full flex items-center justify-center">
+          <!-- Pulsing Concentric Rings -->
+          <div class="absolute inset-0 rounded-full border-4 border-emerald-500/20 animate-pulse-soft"></div>
+          <div class="absolute inset-0 rounded-full border-4 border-emerald-500/20 animate-pulse-soft"
+            style="animation-delay: 1s"></div>
+          <div class="absolute inset-0 rounded-full border-4 border-emerald-500/20 animate-pulse-soft"
+            style="animation-delay: 2s"></div>
+
+          <div
+            class="relative w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shadow-[0_0_20px_rgba(52,211,153,0.2)]">
+            <span class="text-4xl filter drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]">📡</span>
+          </div>
+        </div>
+        <p
+          class="mt-8 text-[10px] font-black uppercase tracking-[0.4em] text-emerald-600 dark:text-emerald-400 opacity-60">
+          Scanning Area...</p>
+      </div>
+
       <!-- Live Monitoring Elements Go Here via JS -->
       <div id="latestList" class="flex flex-col gap-5">
         <!-- Minimal Skeleton Loaders for Fluidity -->
@@ -210,32 +325,88 @@
     <!-- ARCHIVE VIEW: History -->
     <div id="historyView" class="hidden fade-view">
       <div class="flex items-center justify-between mb-6 px-1">
-        <h2 class="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest drop-shadow-sm">Incident Logs</h2>
-        <button id="resetBtn" class="text-xs font-bold uppercase tracking-widest text-rose-600 dark:text-rose-300 hover:text-white bg-rose-100 dark:bg-rose-500/20 hover:bg-rose-500 dark:hover:bg-rose-500/40 px-4 py-2.5 rounded-full border border-rose-300 dark:border-rose-500/30 transition-all active:scale-95 shadow-sm">
-          Erase Logs
+        <h2 class="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest drop-shadow-sm">
+          Incident Logs</h2>
+        <button id="clearLogsBtn" class="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-500/20 hover:bg-rose-500/10 active:scale-95">
+          <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Delete All
         </button>
       </div>
-      
+
       <div id="alertList" class="flex flex-col gap-5">
         <!-- History Elements Go Here -->
       </div>
     </div>
+
+    <!-- CONTROL VIEW: Settings -->
+    <div id="controlView" class="hidden fade-view">
+      <div class="flex items-center justify-between mb-6 px-1">
+        <h2 class="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest drop-shadow-sm">
+          System Controls</h2>
+      </div>
+
+      <div class="flex flex-col gap-4">
+
+
+        <!-- Notification Mute -->
+        <div class="glass rounded-3xl p-6 flex items-center justify-between group">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-2xl">🔊</div>
+            <div>
+              <h4 class="font-bold text-slate-800 dark:text-white">Alert Audio</h4>
+              <p class="text-xs text-slate-500 font-medium">Play siren sound on detection</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="audioToggleBtn" value="" class="sr-only peer" checked>
+            <div
+              class="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500 rounded-full">
+            </div>
+          </label>
+        </div>
+
+        <!-- Dangerous Actions Section -->
+        <div class="mt-4 px-2">
+          <p class="text-[10px] font-black uppercase tracking-widest text-rose-500 mb-4 opacity-70">Danger Zone</p>
+          <button id="resetBtn"
+            class="w-full glass !bg-rose-500/10 hover:!bg-rose-500/20 border-rose-500/30 rounded-2xl py-4 text-rose-500 font-bold text-sm transition-all active:scale-[0.98]">
+            Erase Logs and Reset System
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <!-- Mobile-Centric Floating Bottom Nav Bar -->
-  <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 glass-heavy rounded-full px-2.5 py-2.5 flex items-center shadow-[0_10px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50 w-[90%] max-w-md justify-between backdrop-blur-3xl">
+  <!-- Mobile-Centric Floating Bottom Nav Bar (Highly Transparent) -->
+  <nav
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 glass !bg-white/20 dark:!bg-black/30 !border-white/30 dark:!border-white/5 rounded-full px-2 py-2 flex items-center shadow-[0_20px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.8)] z-50 w-[92%] max-w-md justify-between backdrop-blur-[16px]">
     <button id="homeTab" class="nav-btn active flex-1 flex flex-col items-center justify-center py-3 rounded-full">
-      <svg class="w-7 h-7 mb-1.5 drop-shadow-sm pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+      <svg class="w-6 h-6 mb-1 drop-shadow-sm pointer-events-none" fill="none" stroke="currentColor"
+        viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
       </svg>
-      <span class="text-[11px] font-black uppercase tracking-[0.15em] drop-shadow-sm pointer-events-none">Monitor</span>
+      <span class="text-[9px] font-black uppercase tracking-[0.15em] drop-shadow-sm pointer-events-none">Monitor</span>
     </button>
     <button id="historyTab" class="nav-btn flex-1 flex flex-col items-center justify-center py-3 rounded-full">
-      <svg class="w-7 h-7 mb-1.5 drop-shadow-sm pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      <svg class="w-6 h-6 mb-1 drop-shadow-sm pointer-events-none" fill="none" stroke="currentColor"
+        viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+          d="M12 8V12l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <span class="text-[11px] font-black uppercase tracking-[0.15em] drop-shadow-sm pointer-events-none">Archive</span>
+      <span class="text-[9px] font-black uppercase tracking-[0.15em] drop-shadow-sm pointer-events-none">History</span>
+    </button>
+    <button id="controlTab" class="nav-btn flex-1 flex flex-col items-center justify-center py-3 rounded-full">
+      <svg class="w-6 h-6 mb-1 drop-shadow-sm pointer-events-none" fill="none" stroke="currentColor"
+        viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+      <span class="text-[9px] font-black uppercase tracking-[0.15em] drop-shadow-sm pointer-events-none">Control</span>
     </button>
   </nav>
 
@@ -251,6 +422,7 @@
   <!-- Load Everything via Distributed ES Modules -->
   <script src="./config.js"></script>
   <script type="module" src="./app.js"></script>
-  
+
 </body>
+
 </html>

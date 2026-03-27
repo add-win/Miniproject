@@ -1,7 +1,7 @@
 import * as API from './scripts/api.js';
-import * as UI from './scripts/ui.js';
-import * as FCM from './scripts/fcm.js';
 import { createAlertCard } from './scripts/components.js';
+import * as FCM from './scripts/fcm.js';
+import * as UI from './scripts/ui.js';
 
 let lastSeenTime = null;
 
@@ -12,7 +12,12 @@ async function syncState() {
 
   // 2. Fetch Alerts
   const detections = await API.fetchDetections();
-  UI.renderLists(detections, createAlertCard);
+  UI.renderLists(detections, (d, i) => createAlertCard(d, i, async (ts) => {
+    if (confirm(`Remove the alert for ${d.animal}?`)) {
+      await API.deleteDetection(ts);
+      syncState(); // Instantly refresh the UI
+    }
+  }));
 
   // 3. Banner Trigger for New Activity
   if (detections.length > 0) {
@@ -20,11 +25,19 @@ async function syncState() {
     if (latest.time !== lastSeenTime) {
       if (lastSeenTime !== null) {
         UI.showLiveBanner(latest.message || `⚠️ ${latest.animal} detected!`, latest.imageUrl || "");
-        UI.playAlertSound();
+
+        // Respect the Audio Toggle switch
+        const audioBtn = document.getElementById("audioToggleBtn");
+        if (!audioBtn || audioBtn.checked) {
+          UI.playAlertSound();
+        }
       }
       lastSeenTime = latest.time;
     }
   }
+
+  // Safe recursive polling to prevent network race conditions
+  setTimeout(syncState, 5000);
 }
 
 function setupEventBindings() {
@@ -67,6 +80,19 @@ function setupEventBindings() {
       }
     });
   }
+
+  // Clear History Logs (keeps device tokens)
+  if (UI.els.clearLogsBtn) {
+    UI.els.clearLogsBtn.addEventListener("click", async () => {
+      if (!confirm("Delete all incident history? Images will also be erased. This cannot be undone.")) return;
+      const success = await API.clearLogsAPI();
+      if (success) {
+        syncState();
+      } else {
+        alert("Failed to clear logs. Is the server running?");
+      }
+    });
+  }
 }
 
 function bootWildGuardApp() {
@@ -79,10 +105,9 @@ function bootWildGuardApp() {
 
   setupEventBindings();
   FCM.initFCM();
-  
+
   // Start the polling loop
   syncState();
-  setInterval(syncState, 5000); 
 }
 
 // Spark up

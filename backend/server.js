@@ -117,6 +117,10 @@ app.post("/detect", async (req, res) => {
   }
 
   const fcmMessage = {
+    notification: {
+      title: "⚠️ Wild Animal Detected",
+      body: `${animal} detected at ${location}`,
+    },
     data: {
       title: "⚠️ Wild Animal Detected",
       body: `${animal} detected at ${location}`,
@@ -126,6 +130,17 @@ app.post("/detect", async (req, res) => {
       timestamp: timestamp.toISOString(),
     },
     tokens: validTokens,
+    android: {
+      priority: "high",
+    },
+    webpush: {
+      headers: { Urgency: "high" },
+      notification: {
+        icon: "/icons/icon-192.png",
+        image: imageUrl || undefined,
+        requireInteraction: true,
+      },
+    },
   };
 
   try {
@@ -165,13 +180,48 @@ app.get("/detections", (req, res) => {
 });
 
 // ─────────────────────────────────────────
+// Delete Specific Detection
+// ─────────────────────────────────────────
+app.delete("/detections/:timestamp", async (req, res) => {
+  const ts = req.params.timestamp;
+
+  const idx = detections.findIndex(d => d.timestamp === ts);
+  if (idx !== -1) {
+    const deleted = detections.splice(idx, 1)[0];
+    fs.writeFileSync(detectionsFile, JSON.stringify(detections, null, 2));
+
+    // Delete local image
+    if (deleted.imageUrl) {
+      try {
+        const filename = deleted.imageUrl.split('/').pop();
+        const p = path.join(__dirname, "detections", filename);
+        if (fs.existsSync(p)) fs.unlinkSync(p);
+      } catch (e) { }
+    }
+
+    // Delete from Firestore
+    try {
+      const snapshot = await db.collection("alerts").where("timestamp", "==", new Date(ts)).get();
+      const batch = db.batch();
+      snapshot.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+    } catch (err) {
+      console.error("⚠️  Failed to delete from Firestore:", err.message);
+    }
+
+    return res.json({ success: true, message: "Deleted" });
+  }
+  return res.status(404).json({ error: "Not found" });
+});
+
+// ─────────────────────────────────────────
 // Reset System
 // ─────────────────────────────────────────
 app.post("/reset", async (req, res) => {
   // Empty memory
   tokens = [];
   detections = [];
-  
+
   // Empty local file
   fs.writeFileSync(detectionsFile, JSON.stringify([], null, 2));
 
@@ -208,6 +258,39 @@ app.post("/reset", async (req, res) => {
 });
 
 // ─────────────────────────────────────────
+// Clear Detections Only (keeps device tokens)
+// ─────────────────────────────────────────
+app.post("/clear-detections", async (req, res) => {
+  detections = [];
+  fs.writeFileSync(detectionsFile, JSON.stringify([], null, 2));
+
+  // Remove local images
+  const detectionsDir = path.join(__dirname, "detections");
+  if (fs.existsSync(detectionsDir)) {
+    const files = fs.readdirSync(detectionsDir);
+    for (const file of files) {
+      if (file.endsWith(".jpg") || file.endsWith(".png")) {
+        try { fs.unlinkSync(path.join(detectionsDir, file)); } catch (e) {}
+      }
+    }
+  }
+
+  // Clear Firestore alerts
+  try {
+    const snapshot = await db.collection("alerts").get();
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    console.log("🔥 Firestore logs cleared");
+  } catch (err) {
+    console.error("⚠️ Firestore log wipe failed:", err.message);
+  }
+
+  console.log("🗑️ History logs cleared (tokens kept).");
+  res.json({ message: "History logs cleared successfully" });
+});
+
+// ─────────────────────────────────────────
 // Health Check
 // ─────────────────────────────────────────
 app.get("/health", (req, res) => {
@@ -227,7 +310,7 @@ app.listen(PORT, "0.0.0.0", () => {
   const os = require('os');
   const networkInterfaces = os.networkInterfaces();
   let ipAddress = 'localhost';
-  
+
   for (const interfaceName in networkInterfaces) {
     for (const iface of networkInterfaces[interfaceName]) {
       if (iface.family === 'IPv4' && !iface.internal) {

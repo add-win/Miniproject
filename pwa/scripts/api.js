@@ -42,3 +42,21 @@ export async function resetSystemAPI() {
     return false;
   }
 }
+
+export async function deleteDetection(timestamp) {
+  try {
+    const res = await fetch(`${SERVER_URL}/detections/${encodeURIComponent(timestamp)}`, { method: "DELETE" });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function clearLogsAPI() {
+  try {
+    const res = await fetch(`${SERVER_URL}/clear-detections`, { method: "POST" });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}

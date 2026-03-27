@@ -1,101 +1,97 @@
-# 🐾 WildGuard — Progressive Web App (PWA)
+# 🐾 WildGuard
+### *Next-Gen AI Wildlife Surveillance & Security*
 
-A real-time wildlife intrusion alert PWA. Open it in any browser on any device on your local network — it receives push notifications via Firebase Cloud Messaging even when the browser tab is in the background or the screen is off.
-
----
-
-## 📁 Structure
-
-```
-pwa/
-├── index.html                  ← Main UI
-├── app.js                      ← FCM setup, polling, alert rendering
-├── firebase-messaging-sw.js    ← Service worker (background notifications)
-├── manifest.json               ← PWA manifest (makes it installable)
-└── icons/
-    ├── icon-192.png
-    └── icon-512.png
-```
+WildGuard is an advanced AI-powered monitoring system designed to mitigate human-wildlife conflict and preserve biodiversity. By combining real-time computer vision with cloud-based mobile alerting, it provides an instantaneous defense layer for forest borders, agricultural lands, and remote communities.
 
 ---
 
-## ⚙️ Setup
+## ✨ Key Features
 
-### 1. PWA Config (Frontend)
-
-Copy `pwa/config.example.js` to `pwa/config.js` and replace the placeholders:
-
-```javascript
-const CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  vapidKey: "YOUR_VAPID_KEY"
-};
-```
-These keys help the frontend communicate with Firebase Cloud Messaging.
-
-### 2. Backend Config (Node.js)
-
-1. **Environment Variables**: Copy `backend/.env.example` to `backend/.env` and configure your settings (like port and keys).
-2. **Service Account**: Download your Firebase Service Account JSON from the Firebase Console, name it `firebase-key.json`, and place it in the `backend/` folder (or update the `.env` path).
-
-> **Note**: Both `config.js`, `.env`, and `firebase-key.json` are ignored by Git, so your credentials remain safe.
-
-### 3. Backend IP (Automatic)
-The backend IP in the PWA automatically adapts to the origin, so no manual IP configuration is required!
+-   **🧠 Smart AI Detection**: Uses a Deep Learning (CNN) model to identify 50+ species of wildlife.
+-   **🛡️ Anti-False Alert Engine**: Implements multi-frame confirmation and motion pre-filtering to ensure only valid threats trigger alerts.
+-   **📱 Instant PWA Alerts**: Real-time push notifications delivered to any mobile device (Android/iOS) via Firebase Cloud Messaging.
+-   **📡 Remote Radar Feed**: Live monitoring dashboard with "Radar Mode" and incident history logs.
+-   **⚡ Low-Latency Pipeline**: Optimized for performance with background motion subtraction to reduce CPU load.
+-   **💾 Cloud Sync**: All detections are automatically synced to Firebase Firestore for cross-device visibility.
 
 ---
 
-## 🚀 Running the PWA & Exposing to Internet
+## 🌍 Sustainable Development Goals (SDG)
 
-The PWA **must be served over HTTPS** (or localhost) for service workers and FCM push notifications to work on your phone.
+WildGuard is engineered to support the United Nations 2030 Agenda:
 
-### 1. Start the Backend
-The backend already serves the PWA static assets natively. Start the server:
+| Goal | Contribution |
+| :--- | :--- |
+| **SDG 15: Life on Land** | Protects endangered species and prevents poaching through 24/7 automated monitoring. |
+| **SDG 11: Sustainable Cities** | Safer human-animal co-existence in urban-forest transition zones. |
+| **SDG 2: Zero Hunger** | Protects livelihoods by preventing crop raids and livestock loss. |
+| **SDG 9: Industry & Innovation** | Demonstrates the power of AI & IoT in modern environmental conservation. |
+
+---
+
+## 🛠️ Technology Stack
+
+-   **Vision Engine**: Python 3.10+, OpenCV, TensorFlow/Keras.
+-   **Cloud Infrastructure**: Firebase (FCM, Firestore, Hosting).
+-   **Server**: Node.js, Express.
+-   **Frontend**: PWA with Vanilla JS & Tailwind CSS.
+
+---
+
+## ⚙️ Quick Start Guide
+
+### 1. Installation
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd Miniproject
+
+# Install backend dependencies
 cd backend
-npm run start
+npm install
 ```
-It will run locally on `http://localhost:5000`.
 
-### 2. Expose with Ngrok (Required for Phone)
-To securely access the PWA from your phone with HTTPS, use [ngrok](https://ngrok.com/download):
+### 2. Configuration
+1.  **Backend**: Place your `firebase-key.json` (Firebase Service Account) in the `backend/` folder.
+2.  **Frontend**: Copy `pwa/config.example.js` to `pwa/config.js` and add your Firebase project keys.
+
+### 3. Execution
+**Step A: Launch the Backend**
 ```bash
-ngrok http 5000
+node server.js
 ```
-Ngrok will generate a secure HTTPS Forwarding URL (e.g., `https://a1b2c3d4.ngrok-free.app`).
-
----
-
-## 📱 How to Install on Phone
-
-1. Open your **ngrok HTTPS URL** in Chrome on your Android phone.
-2. Tap the **⬇ Install App** button that appears in the top bar  
-   *(or tap Chrome menu → "Add to Home Screen")*
-3. The PWA installs like a native app with its own icon on your homescreen.
-4. Tap **Enable Notifications** when prompted.
-5. Done — you'll now receive push alerts even if the app UI is closed!
-
----
-
-## 🔔 Notification Flow
-
-```
-Detection Script
-      │  POST /detect
-      ▼
-Backend (laptop)
-      ├──▶ FCM push → Phone receives notification (even if PWA is closed)
-      └──▶ detections.json updated → PWA polls every 5s → UI updates
-```
-
----
-
-## 🧪 Test It
-
+**Step B: Start AI Monitoring**
 ```bash
-curl -X POST http://localhost:5000/detect \
-  -H "Content-Type: application/json" \
-  -d '{"animal":"Tiger","location":"North Fence","threatLevel":"HIGH"}'
+python detect.py
+```
+*Tip: Press **'q'** in the video window to safely exit and release the camera.*
+
+---
+
+## 📱 Mobile Installation
+
+1.  **Expose Server**: Use Ngrok to create a secure tunnel: `npx ngrok http 5000`.
+2.  **Access URL**: Scan the QR/Open the HTTPS URL in your mobile browser.
+3.  **Install**: Tap **"Add to Home Screen"** or the **"Install App"** button in the top bar.
+4.  **Stay Alert**: Grant notification permissions to receive background push alerts.
+
+---
+
+## 📁 System Architecture
+
+```text
+Miniproject/
+├── backend/
+│   ├── detect.py              # Smart AI Detection Engine
+│   ├── server.js               # API Server & PWA Host
+│   ├── wild_animal_model.keras # AI Weight File
+│   └── detections.json         # Local Persistence Log
+└── pwa/
+    ├── index.html              # Modern Dashboard UI
+    ├── app.js                  # PWA Interaction Logic
+    └── firebase-messaging-sw.js # Background Service Worker
 ```
 
-Your phone should show a push notification within seconds.
+---
+
+*Designed with ❤️ for Wildlife Conservation & Community Safety.* 🌿
