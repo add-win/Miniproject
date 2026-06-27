@@ -43,6 +43,27 @@ These keys help the frontend communicate with Firebase Cloud Messaging.
 ### 3. Backend IP (Automatic)
 The backend IP in the PWA automatically adapts to the origin, so no manual IP configuration is required!
 
+### 4. AI Detector Setup (Python)
+To run the animal detection AI script:
+1. Make sure you have **Python 3.10 - 3.13** installed.
+2. Create and activate a Python virtual environment:
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate  # Windows
+   source .venv/bin/activate  # macOS/Linux
+   ```
+3. Install the required dependencies:
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+4. **Model File Setup**: Place your TensorFlow trained model file (`wild_animal_model.keras`) directly in the `backend/` directory. *(Note: This file is ignored by Git to avoid uploading large binaries to GitHub).*
+5. **Deterrent Sounds Setup**: Run the audio generator script to create the audio deterrent `.wav` files inside `backend/sounds/` (they may already be pre-generated):
+   ```bash
+   cd backend
+   python generate_sounds.py
+   ```
+
+
 ---
 
 ## 🚀 Running the PWA & Exposing to Internet
@@ -57,7 +78,19 @@ npm run start
 ```
 It will run locally on `http://localhost:5000`.
 
-### 2. Expose with Ngrok (Required for Phone)
+### 2. Start the AI Detection Script
+With the backend server running, launch the live monitoring script:
+```bash
+# Ensure your virtual environment is active
+python backend/detect.py
+```
+This will initialize your webcam, load the TensorFlow model, start real-time monitoring, and:
+- Play a pulsing deterrent audio alarm on detection.
+- Save the detection frames inside `backend/detections/`.
+- Send alerts to the backend, which triggers FCM push notifications to registered devices.
+*(Note: Press `q` to quit the camera window).*
+
+### 3. Expose with Ngrok (Required for Phone)
 To securely access the PWA from your phone with HTTPS, use [ngrok](https://ngrok.com/download):
 ```bash
 ngrok http 5000

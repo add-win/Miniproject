@@ -19,9 +19,22 @@ yarn-error.log*
 latest.jpg
 
 
-# System
+# System & IDEs
 .DS_Store
 Thumbs.db
+.ipynb_checkpoints/
+.vscode/
+.idea/
 
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Large Machine Learning Models
 backend/wild_animal_model.keras
-backend/class_labels.json
+
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
